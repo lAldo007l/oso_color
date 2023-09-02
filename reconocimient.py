@@ -1,12 +1,14 @@
 import dlib
 import cv2
 import numpy as np
+from imutils import face_utils
+
 
 humbral_similitud = 50
 
 detector_rostro = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(
-    "Modelos/shape_predictor_68_face_landmarks.dat")
+    "shape_predictor_68_face_landmarks.dat")
 
 rostros_conocidos = {}
 
@@ -45,7 +47,7 @@ def register_face(detected_face):
 
     return id_actual
 
-
+@staticmethod
 def procesar_imagen(ruta_imagen):
     image = cv2.imread(ruta_imagen)
     detected_faces = detect_faces(image)
@@ -66,9 +68,3 @@ def procesar_imagen(ruta_imagen):
 
 # Para usar esta base de reconocimiento facial, puedes llamar a la función `procesar_imagen(ruta_imagen)`
 # con la ruta de la imagen que deseas procesar. Devolverá una lista de IDs de rostros detectados.
-
-
-# Ejemplo de uso:
-ruta_imagen_ejemplo = "foto.jpeg"  # Ruta a la imagen que deseas procesar
-ids_detectados = procesar_imagen(ruta_imagen_ejemplo)
-print("IDs detectados:", ids_detectados)

@@ -3,6 +3,7 @@ import numpy as np
 import pyttsx3
 import time
 import threading
+from reconocimient import procesar_imagen
 
 # Define los umbrales de color para cada color
 umbrales_de_color = {
@@ -38,7 +39,7 @@ def calcular_centro_camara(frame):
     
 
 # Función para detectar color y rostro
-def detectar_color_y_rostro(frame):
+def detectar_color(frame):
     global ultimo_tiempo_color
     
     tiempo_actual = time.time()
@@ -70,38 +71,42 @@ def reproducir_audio(texto):
     engine.runAndWait()
     
 while True:
-    ret, frame = cap.read()
-    
-    if ret:
-        if center_x is None or center_y is None:
-            center_x, center_y = calcular_centro_camara(frame)
-        
-        # Dibuja la región de reconocimiento en el centro
-        x1 = center_x - region_size // 2
-        y1 = center_y - region_size // 2
-        x2 = x1 + region_size
-        y2 = y1 + region_size
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        
-        color_detectado = detectar_color_y_rostro(frame)
-        
-        if(color_detectado is not None):
-            print(color_detectado)
-            # Pronuncia el color detectado
-            # engine.say("El color detectado es: {}".format(color_detectado))
-            # engine.runAndWait()
-            audio_thread = threading.Thread(target=reproducir_audio, args=('El color detectado es:' + color_detectado,))
-            audio_thread.start()
-            color_anunciado = color_detectado
+    # Ejemplo de uso:
+    ruta_imagen_ejemplo = "foto1.jpg"  # Ruta a la imagen que deseas procesar
+    ids_detectados = procesar_imagen(ruta_imagen_ejemplo)
+    print(ids_detectados)
+    if ids_detectados is not None:
+        ret, frame = cap.read()
+        if ret:
+            if center_x is None or center_y is None:
+                center_x, center_y = calcular_centro_camara(frame)
+            
+            # Dibuja la región de reconocimiento en el centro
+            x1 = center_x - region_size // 2
+            y1 = center_y - region_size // 2
+            x2 = x1 + region_size
+            y2 = y1 + region_size
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            
+            color_detectado = detectar_color(frame)
+            
+            if(color_detectado is not None):
+                print(color_detectado)
+                # Pronuncia el color detectado
+                # engine.say("El color detectado es: {}".format(color_detectado))
+                # engine.runAndWait()
+                audio_thread = threading.Thread(target=reproducir_audio, args=('El color detectado es:' + color_detectado,))
+                audio_thread.start()
+                color_anunciado = color_detectado
 
-        cv2.imshow('frame', frame)
+            cv2.imshow('frame', frame)
+            
+            # Captura durante 5 segundos enfocando objetos en la región de reconocimiento
+            if cv2.waitKey(1) & 0xFF == ord('s'):
+                time.sleep(10)
         
-        # Captura durante 5 segundos enfocando objetos en la región de reconocimiento
-        if cv2.waitKey(1) & 0xFF == ord('s'):
-            time.sleep(10)
-    
-    else:
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+        else:
+            break 
+        
+    cap.release()
+    cv2.destroyAllWindows()
